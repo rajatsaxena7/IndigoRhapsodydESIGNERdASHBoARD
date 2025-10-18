@@ -12,6 +12,8 @@ import {
   InfoContainer,
 } from "./LoginsScreen.styles";
 import { loginDesigner } from "../../service/authService";
+import { isAuthenticated } from "../../service/cookieService";
+import { useAuth } from "../../context/AuthContext";
 
 function Loginscreen() {
   const [email, setEmail] = useState("");
@@ -19,10 +21,10 @@ function Loginscreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    if (userId) {
+    if (isAuthenticated()) {
       navigate("/dashboard");
     }
   }, [navigate]);
@@ -34,12 +36,8 @@ function Loginscreen() {
     try {
       const response = await loginDesigner(email, password);
 
-      localStorage.setItem("userId", response.userId);
-      localStorage.setItem("designerId", response.designerId);
-
-      if (response.token) {
-        localStorage.setItem("token", response.token);
-      }
+      // Update auth context
+      login(response);
 
       toast.success("Login successful!", {
         position: "top-right",

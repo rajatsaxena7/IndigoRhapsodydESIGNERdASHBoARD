@@ -108,13 +108,33 @@ function EditVariantModal({ show, onClose }) {
       setUploading(true);
       setProgress(10); // Initial progress
       try {
+        console.log("Starting bulk update process...");
+        console.log("Selected file:", file.name, file.size);
+        
         // Step 1: Upload the file to Firebase Storage
         setProgress(30);
+        console.log("Uploading file to Firebase Storage...");
         const fileUrl = await uploadFileAndGetURL(file);
+        console.log("File uploaded to Firebase:", fileUrl);
 
         // Step 2: Call the backend API with the file URL
         setProgress(60);
+        console.log("Calling backend API with file URL...");
+        
+        // Test if the file URL is accessible
+        try {
+          const testResponse = await fetch(fileUrl, { method: 'HEAD' });
+          console.log("File URL accessibility test:", {
+            status: testResponse.status,
+            ok: testResponse.ok,
+            url: fileUrl
+          });
+        } catch (testError) {
+          console.warn("File URL accessibility test failed:", testError);
+        }
+        
         const response = await edituploadBulkExcel(fileUrl);
+        console.log("Backend API response:", response);
 
         setProgress(100);
         toast.success("Product variants updated successfully!");
@@ -123,8 +143,12 @@ function EditVariantModal({ show, onClose }) {
         window.location.reload(); // Refresh the page to reflect new data
       } catch (error) {
         setProgress(0);
-        toast.error("Error updating product variants");
-        console.error("Failed to upload file:", error.message);
+        console.error("Bulk update error details:", {
+          message: error.message,
+          stack: error.stack,
+          response: error.response
+        });
+        toast.error(`Error updating product variants: ${error.message}`);
       } finally {
         setUploading(false);
       }

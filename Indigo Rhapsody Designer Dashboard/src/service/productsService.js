@@ -1,47 +1,24 @@
+import { apiGet, apiPut, apiPost } from './apiService';
+import { getDesignerId } from './cookieService';
+
 export const getProductsBydesigner = async () => {
   try {
-    const designerId = localStorage.getItem("designerId");
-    const response = await fetch(
-      `https://indigo-rhapsody-backend-ten.vercel.app/products/getProductsByDesigner/${designerId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to load data");
+    const designerId = getDesignerId();
+    if (!designerId) {
+      throw new Error('Designer ID not found');
     }
-
-    const data = await response.json();
+    
+    const data = await apiGet(`/products/getProductsByDesigner/${designerId}`);
     return data;
   } catch (error) {
     // console.error("Error loading data:", error);
     throw error;
   }
 };
+
 export const updateProductStatus = async (productId, enabled) => {
   try {
-    const response = await fetch(
-      `https://indigo-rhapsody-backend-ten.vercel.app/products/${productId}/toggle-status`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ enabled }), // Use `enabled` instead of `status`
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to update product status");
-    }
-
-    const data = await response.json();
+    const data = await apiPut(`/products/${productId}/toggle-status`, { enabled });
     return data;
   } catch (error) {
     console.error("Error updating product status:", error);
@@ -51,24 +28,7 @@ export const updateProductStatus = async (productId, enabled) => {
 
 export const createPassword = async (email, password) => {
   try {
-    const response = await fetch(
-      "https://indigo-rhapsody-backend-ten.vercel.app/products/createProduct",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      }
-    );
-
-    if (!response.ok) {
-      // Handle HTTP errors
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Login failed");
-    }
-
-    const data = await response.json();
+    const data = await apiPost("/products/createProduct", { email, password });
     return data; // Return the user and designer details
   } catch (error) {
     // console.error("Error logging in:", error);

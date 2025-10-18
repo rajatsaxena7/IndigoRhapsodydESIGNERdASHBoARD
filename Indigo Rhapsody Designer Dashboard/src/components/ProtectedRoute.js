@@ -1,11 +1,10 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { isAuthenticated } from "../service/cookieService";
 
 const ProtectedRoute = ({ children }) => {
-  const userId = localStorage.getItem("userId");
-
-  // Check if userId exists; if not, redirect to login
-  return userId ? children : React.createElement(Navigate, { to: "/login" });
+  // Check if user is authenticated using cookies
+  return isAuthenticated() ? children : React.createElement(Navigate, { to: "/login" });
 };
 
 export default ProtectedRoute;

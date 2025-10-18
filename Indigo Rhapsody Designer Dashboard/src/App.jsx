@@ -13,80 +13,50 @@ import OrderScreen from "./screens/orders/orderScreen";
 import ShippingPage from "./screens/shipping/shippingPage";
 import ReturnRequest from "./screens/returnRequest/ReturnRequest";
 import ProfileScreen from "./screens/profile/profileScreen";
+import VideosScreen from "./screens/videos/videosScreen";
 import "react-toastify/dist/ReactToastify.css";
 import NotificationScreen from "./screens/notifications/notificationScreen";
 import SignupScreen from "./screens/signUpScreen/signupScreen";
-// import SignupScreen from "./screens/signUpScreen/SignupScreen";
-
-const routes = [
-  {
-    path: "/",
-    element: <BaseLayout />,
-    children: [
-      {
-        path: "",
-        element: <DashboardScreen />,
-      },
-      {
-        path: "products",
-        element: <ProductsPage />,
-      },
-      {
-        path: "orders",
-        element: <OrderScreen />,
-      },
-      {
-        path: "shippingDetails",
-        element: <ShippingPage />,
-      },
-      {
-        path: "notifications",
-        element: <NotificationScreen />,
-      },
-    ],
-  },
-  {
-    path: "/login", // Add this route for the login page
-    element: <Loginscreen />,
-  },
-  {
-    path: "*",
-    element: <PageNotFound />,
-  },
-];
+import { AuthProvider } from "./context/AuthContext";
+import { getApiBaseUrl, isProduction, isTesting } from "./config/environment";
 
 function App() {
+  // Environment startup banner
+  console.log(`%c🚀 Indigo Rhapsody Designer Dashboard`, 'color: #9C27B0; font-weight: bold; font-size: 16px;');
+  console.log(`%c🌍 Environment: ${isProduction() ? 'PRODUCTION' : isTesting() ? 'TESTING' : 'UNKNOWN'}`, 'color: #4CAF50; font-weight: bold; font-size: 14px;');
+  console.log(`%c🔗 API Base URL: ${getApiBaseUrl()}`, 'color: #2196F3; font-weight: bold;');
   return (
     <ThemeProvider theme={theme}>
-      <ToastContainer position="top-right" autoClose={3000} />
-      <Router>
-        <GlobalStyles />
+      <AuthProvider>
+        <ToastContainer position="top-right" autoClose={3000} />
+        <Router>
+          <GlobalStyles />
 
-        <Routes>
-          <Route path="/" element={<Loginscreen />} /> {/* Default route */}
-          <Route path="/signup" element={<SignupScreen />} />
-          {/* Signup route */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <BaseLayout>
-                  <DashboardScreen />
-                </BaseLayout>
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<DashboardScreen />} />
-            <Route path="products" element={<ProductsPage />} />
-            <Route path="orders" element={<OrderScreen />} />
-            <Route path="shippingDetails" element={<ShippingPage />} />
-            <Route path="returnRequest" element={<ReturnRequest />} />
-            <Route path="profile" element={<ProfileScreen />} />
-            <Route path="notifications" element={<NotificationScreen />} />
-          </Route>
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      </Router>
+          <Routes>
+            <Route path="/" element={<Loginscreen />} />
+            <Route path="/login" element={<Loginscreen />} />
+            <Route path="/signup" element={<SignupScreen />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <BaseLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<DashboardScreen />} />
+              <Route path="products" element={<ProductsPage />} />
+              <Route path="orders" element={<OrderScreen />} />
+              <Route path="shippingDetails" element={<ShippingPage />} />
+              <Route path="returnRequest" element={<ReturnRequest />} />
+              <Route path="videos" element={<VideosScreen />} />
+              <Route path="profile" element={<ProfileScreen />} />
+              <Route path="notifications" element={<NotificationScreen />} />
+            </Route>
+            <Route path="*" element={<PageNotFound />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

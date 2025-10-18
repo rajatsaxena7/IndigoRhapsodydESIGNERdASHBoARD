@@ -1,94 +1,65 @@
-const BASE_URL = "https://indigo-rhapsody-backend-ten.vercel.app";
-
-const designerId = localStorage.getItem("designerId");
-const userId = localStorage.getItem("userId");
+import { apiGet, apiPost } from './apiService';
+import { getDesignerId, getUserId } from './cookieService';
 
 export const createShippingOrder = async (shippingDetails) => {
-  const response = await fetch(`${BASE_URL}/shipping/createOrder`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(shippingDetails),
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || "Failed to create shipping order");
+  try {
+    const data = await apiPost(`/shipping/createOrder`, shippingDetails);
+    return data;
+  } catch (error) {
+    throw new Error(error.message || "Failed to create shipping order");
   }
-  return data;
-  x;
 };
 
 export const createManifest = async (shipmentId) => {
-  const response = await fetch(`${BASE_URL}/shipping/generate-manifest`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ shipment_id: shipmentId }),
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || "Failed to create manifest");
+  try {
+    const data = await apiPost(`/shipping/generate-manifest`, { shipment_id: shipmentId });
+    return data;
+  } catch (error) {
+    throw new Error(error.message || "Failed to create manifest");
   }
-  return data;
 };
 
 export const createInvoice = async (shipmentId) => {
-  const response = await fetch(`${BASE_URL}/shipping/generate-manifest`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ shipment_id: shipmentId }),
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || "Failed to create invoice");
+  try {
+    const data = await apiPost(`/shipping/generate-manifest`, { shipment_id: shipmentId });
+    return data;
+  } catch (error) {
+    throw new Error(error.message || "Failed to create invoice");
   }
-  return data;
 };
 export const getPickupLocationName = async (designerRef) => {
-  const response = await fetch(
-    `${BASE_URL}/designer/${designerRef}/pickup-location`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || "Failed to get pickup location name");
+  try {
+    const data = await apiGet(`/designer/${designerRef}/pickup-location`);
+    return data;
+  } catch (error) {
+    throw new Error(error.message || "Failed to get pickup location name");
   }
-  return data;
 };
 
 export const getShippingDetails = async (shipmentId) => {
-  const response = await fetch(`${BASE_URL}/shipping/designer/${designerId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || "Failed to get shipping details");
+  try {
+    const designerId = getDesignerId();
+    if (!designerId) {
+      throw new Error('Designer ID not found');
+    }
+    
+    const data = await apiGet(`/shipping/designer/${designerId}`);
+    return data;
+  } catch (error) {
+    throw new Error(error.message || "Failed to get shipping details");
   }
-  return data;
 };
 
 export const getShippingName = async (shipmentId) => {
-  const response = await fetch(`${BASE_URL}/designer/name/${userId}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.error || "Failed to get shipping details");
+  try {
+    const userId = getUserId();
+    if (!userId) {
+      throw new Error('User ID not found');
+    }
+    
+    const data = await apiGet(`/designer/name/${userId}`);
+    return data;
+  } catch (error) {
+    throw new Error(error.message || "Failed to get shipping details");
   }
-  return data;
 };

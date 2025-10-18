@@ -8,11 +8,13 @@ import { setSidebarClose } from "../../redux/slices/sidebarSlices";
 import { NavLink } from "react-router-dom";
 import { Images } from "../../assets/images";
 import { Modal } from "antd";
+import { useAuth } from "../../context/AuthContext";
 
 function Sidebar() {
   const isSidebarOpen = useSelector((state) => state.isSidebarOpen);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleSignOut = () => {
     Modal.confirm({
@@ -21,8 +23,7 @@ function Sidebar() {
       okText: "Yes, Sign Out",
       cancelText: "Cancel",
       onOk: () => {
-        localStorage.clear(); // Clear all localStorage items
-        navigate("/"); // Redirect to the login page
+        logout(); // Use the auth context logout function
       },
     });
   };
@@ -100,6 +101,18 @@ function Sidebar() {
                   <img src={Icons.Chart} alt="" />
                 </span>
                 <span className="menu-link-text">Return Requests</span>
+              </NavLink>
+            </li>
+            <li className="menu-item">
+              <NavLink
+                to="/dashboard/videos"
+                className="menu-link"
+                activeClassName="active"
+              >
+                <span className="menu-link-icon">
+                  <img src={Icons.Chart} alt="" />
+                </span>
+                <span className="menu-link-text">Videos</span>
               </NavLink>
             </li>
             <li className="menu-item">

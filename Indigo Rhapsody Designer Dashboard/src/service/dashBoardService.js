@@ -1,22 +1,14 @@
+import { apiGet } from './apiService';
+import { getDesignerId } from './cookieService';
+
 export const dashBoardDesigner = async () => {
   try {
-    const designerId = localStorage.getItem("designerId");
-    const response = await fetch(
-      `https://indigo-rhapsody-backend-ten.vercel.app/order/total-orders/designer/${designerId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to load data");
+    const designerId = getDesignerId();
+    if (!designerId) {
+      throw new Error('Designer ID not found');
     }
-
-    const data = await response.json();
+    
+    const data = await apiGet(`/order/total-orders/designer/${designerId}`);
     return data;
   } catch (error) {
     // console.error("Error loading data:", error);
@@ -25,23 +17,12 @@ export const dashBoardDesigner = async () => {
 };
 export const dashBoardDesignerSales = async () => {
   try {
-    const designerId = localStorage.getItem("designerId");
-    const response = await fetch(
-      `https://indigo-rhapsody-backend-ten.vercel.app/order/total-sales/designer/${designerId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to load data");
+    const designerId = getDesignerId();
+    if (!designerId) {
+      throw new Error('Designer ID not found');
     }
-
-    const data = await response.json();
+    
+    const data = await apiGet(`/order/total-sales/designer/${designerId}`);
     return data;
   } catch (error) {
     // console.error("Error loading data:", error);
@@ -51,23 +32,12 @@ export const dashBoardDesignerSales = async () => {
 
 export const dashBoardDesignerProducts = async () => {
   try {
-    const designerId = localStorage.getItem("designerId");
-    const response = await fetch(
-      `https://indigo-rhapsody-backend-ten.vercel.app/products/total-products/designer/${designerId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to load data");
+    const designerId = getDesignerId();
+    if (!designerId) {
+      throw new Error('Designer ID not found');
     }
-
-    const data = await response.json();
+    
+    const data = await apiGet(`/products/total-products/designer/${designerId}`);
     return data;
   } catch (error) {
     // console.error("Error loading data:", error);
@@ -77,23 +47,12 @@ export const dashBoardDesignerProducts = async () => {
 
 export const getOrderForTable = async () => {
   try {
-    const designerId = localStorage.getItem("designerId");
-    const response = await fetch(
-      `https://indigo-rhapsody-backend-ten.vercel.app/order/designer/${designerId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to load data");
+    const designerId = getDesignerId();
+    if (!designerId) {
+      throw new Error('Designer ID not found');
     }
-
-    const data = await response.json();
+    
+    const data = await apiGet(`/order/designer/${designerId}`);
     return data;
   } catch (error) {
     // console.error("Error loading data:", error);
