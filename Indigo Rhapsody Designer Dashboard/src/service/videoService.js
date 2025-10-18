@@ -1,15 +1,16 @@
 import { apiGet, apiPost, apiPut, apiDelete } from './apiService';
 import { getDesignerId, getUserId } from './cookieService';
+import { getApiBaseUrl } from '../config/environment';
 
 export const uploadVideoWithProducts = async (videoData) => {
   try {
     const designerRef = getDesignerId();
     const userId = getUserId();
-    
+
     if (!designerRef) {
       throw new Error('Designer ID not found');
     }
-    
+
     if (!userId) {
       throw new Error('User ID not found');
     }
@@ -26,7 +27,7 @@ export const uploadVideoWithProducts = async (videoData) => {
     console.log("Sending video data to API:", data);
     console.log("API endpoint:", `/content-video/add-video-with-products`);
     console.log("Designer ID:", designerRef);
-    
+
     // Try using apiPost first
     try {
       const response = await apiPost(`/content-video/add-video-with-products`, data);
@@ -34,11 +35,11 @@ export const uploadVideoWithProducts = async (videoData) => {
       return response;
     } catch (apiError) {
       console.log("apiPost failed, trying direct fetch:", apiError);
-      
+
       // Fallback: Try direct fetch with full URL
-      const fullUrl = `https://indigo-rhapsody-backend-ten.vercel.app/content-video/add-video-with-products`;
+      const fullUrl = `${getApiBaseUrl()}/content-video/add-video-with-products`;
       console.log("Trying direct fetch to:", fullUrl);
-      
+
       const directResponse = await fetch(fullUrl, {
         method: 'POST',
         headers: {
@@ -47,16 +48,16 @@ export const uploadVideoWithProducts = async (videoData) => {
         },
         body: JSON.stringify(data)
       });
-      
+
       console.log("Direct fetch response status:", directResponse.status);
       console.log("Direct fetch response headers:", Object.fromEntries(directResponse.headers.entries()));
-      
+
       if (!directResponse.ok) {
         const errorText = await directResponse.text();
         console.log("Direct fetch error text:", errorText);
         throw new Error(`HTTP ${directResponse.status}: ${errorText}`);
       }
-      
+
       const result = await directResponse.json();
       console.log("Direct fetch result:", result);
       return result;

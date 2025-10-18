@@ -1,13 +1,14 @@
-import { 
-  getAccessToken, 
-  getRefreshToken, 
-  setAccessToken, 
-  setRefreshToken, 
+import {
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+  setRefreshToken,
   clearAuthCookies,
-  isTokenExpired 
+  isTokenExpired
 } from './cookieService';
+import { getApiBaseUrl } from '../config/environment';
 
-const BASE_URL = "https://indigo-rhapsody-backend-ten.vercel.app";
+const BASE_URL = getApiBaseUrl();
 
 // Refresh token endpoint
 const REFRESH_TOKEN_URL = `${BASE_URL}/auth/refresh`;
@@ -24,7 +25,7 @@ const processQueue = (error, token = null) => {
       resolve(token);
     }
   });
-  
+
   failedQueue = [];
 };
 
@@ -32,7 +33,7 @@ const processQueue = (error, token = null) => {
 const refreshAccessToken = async () => {
   try {
     const refreshToken = getRefreshToken();
-    
+
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
@@ -50,7 +51,7 @@ const refreshAccessToken = async () => {
     }
 
     const data = await response.json();
-    
+
     if (data.accessToken) {
       setAccessToken(data.accessToken);
       if (data.refreshToken) {
@@ -71,7 +72,7 @@ const refreshAccessToken = async () => {
 // Create authenticated request
 const createAuthenticatedRequest = async (url, options = {}) => {
   let accessToken = getAccessToken();
-  
+
   // Check if token is expired
   if (accessToken && isTokenExpired(accessToken)) {
     if (isRefreshing) {
@@ -92,7 +93,7 @@ const createAuthenticatedRequest = async (url, options = {}) => {
     }
 
     isRefreshing = true;
-    
+
     try {
       accessToken = await refreshAccessToken();
       processQueue(null, accessToken);
@@ -125,15 +126,18 @@ const createAuthenticatedRequest = async (url, options = {}) => {
 // Generic API request function
 export const apiRequest = async (endpoint, options = {}) => {
   const url = `${BASE_URL}${endpoint}`;
-  
+
+  // Log API call for debugging
+  console.log(`🚀 API Call: ${options.method || 'GET'} ${url}`);
+
   try {
     const response = await createAuthenticatedRequest(url, options);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     if (error.message === 'Token refresh failed' || error.message === 'No refresh token available') {

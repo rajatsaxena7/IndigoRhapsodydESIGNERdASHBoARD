@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../service/firebaseService"; // Adjust import to match your file structure
+import { getApiBaseUrl } from "../../config/environment";
 import logo from "../../assets/images/logo.webp";
 import "./stylesheet.css";
 
@@ -222,7 +223,7 @@ function SignupScreen() {
 
     try {
       const response = await fetch(
-        "https://indigo-rhapsody-backend-ten.vercel.app/user/user-designer",
+        `${getApiBaseUrl()}/user/user-designer`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

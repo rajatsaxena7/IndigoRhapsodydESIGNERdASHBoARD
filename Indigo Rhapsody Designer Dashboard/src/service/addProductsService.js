@@ -1,7 +1,6 @@
 import { apiGet, apiPost, apiPut } from './apiService';
 import { getDesignerId, getAccessToken } from './cookieService';
-
-const BASE_URL = "https://indigo-rhapsody-backend-ten.vercel.app";
+import { getApiBaseUrl } from '../config/environment';
 
 export const getCategory = async () => {
   try {
@@ -82,16 +81,16 @@ export const edituploadBulkExcel = async (fileUrl) => {
     if (!fileResponse.ok) {
       throw new Error(`Failed to download file: ${fileResponse.status}`);
     }
-    
+
     const fileBlob = await fileResponse.blob();
     const fileName = fileUrl.split('/').pop().split('?')[0]; // Remove query parameters
     const file = new File([fileBlob], fileName, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    
+
     // Create FormData with the correct field name 'csvFile'
     const formData = new FormData();
     formData.append('csvFile', file);
     formData.append('designerRef', designerRef);
-    
+
     console.log("Sending FormData with csvFile:", {
       fileName: fileName,
       fileSize: file.size,
@@ -100,7 +99,7 @@ export const edituploadBulkExcel = async (fileUrl) => {
     });
 
     // Make direct fetch request with FormData (no auth header needed)
-    const response = await fetch(`${BASE_URL}/products/bulk-update`, {
+    const response = await fetch(`${getApiBaseUrl()}/products/bulk-update`, {
       method: 'POST',
       // Don't set Content-Type for FormData, let browser set it
       body: formData

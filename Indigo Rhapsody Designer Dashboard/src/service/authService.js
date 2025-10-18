@@ -1,18 +1,19 @@
 // authService.js
-import { 
-  setAccessToken, 
-  setRefreshToken, 
-  setUserId, 
+import {
+  setAccessToken,
+  setRefreshToken,
+  setUserId,
   setDesignerId,
   clearAuthCookies,
   getRefreshToken
 } from './cookieService';
 import { apiPost } from './apiService';
+import { getApiBaseUrl } from '../config/environment';
 
 export const loginDesigner = async (email, password) => {
   try {
     const response = await fetch(
-      "https://indigo-rhapsody-backend-ten.vercel.app/user/login",
+      `${getApiBaseUrl()}/user/login`,
       {
         method: "POST",
         headers: {
@@ -29,14 +30,14 @@ export const loginDesigner = async (email, password) => {
     }
 
     const responseData = await response.json();
-    
+
     // Check if the response has the expected structure
     if (!responseData.success || !responseData.data) {
       throw new Error("Invalid response format from server");
     }
 
     const { data } = responseData;
-    
+
     // Store authentication data in cookies
     if (data.accessToken) {
       setAccessToken(data.accessToken);
@@ -50,7 +51,7 @@ export const loginDesigner = async (email, password) => {
     if (data.designerId) {
       setDesignerId(data.designerId);
     }
-    
+
     return data; // Return the user and designer details
   } catch (error) {
     // console.error("Error logging in:", error);
@@ -73,7 +74,7 @@ export const refreshToken = async () => {
     }
 
     const response = await apiPost('/auth/refresh', { refreshToken });
-    
+
     if (response.accessToken) {
       setAccessToken(response.accessToken);
       if (response.refreshToken) {
@@ -81,7 +82,7 @@ export const refreshToken = async () => {
       }
       return response.accessToken;
     }
-    
+
     throw new Error('Invalid refresh response');
   } catch (error) {
     clearAuthCookies();

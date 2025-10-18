@@ -18,8 +18,13 @@ import "react-toastify/dist/ReactToastify.css";
 import NotificationScreen from "./screens/notifications/notificationScreen";
 import SignupScreen from "./screens/signUpScreen/signupScreen";
 import { AuthProvider } from "./context/AuthContext";
+import { getApiBaseUrl, isProduction, isTesting } from "./config/environment";
 
 function App() {
+  // Environment startup banner
+  console.log(`%c🚀 Indigo Rhapsody Designer Dashboard`, 'color: #9C27B0; font-weight: bold; font-size: 16px;');
+  console.log(`%c🌍 Environment: ${isProduction() ? 'PRODUCTION' : isTesting() ? 'TESTING' : 'UNKNOWN'}`, 'color: #4CAF50; font-weight: bold; font-size: 14px;');
+  console.log(`%c🔗 API Base URL: ${getApiBaseUrl()}`, 'color: #2196F3; font-weight: bold;');
   return (
     <ThemeProvider theme={theme}>
       <AuthProvider>

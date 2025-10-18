@@ -5,9 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:testing": "VITE_CURRENT_ENV=testing vite",
     "build": "vite build",
+    "build:testing": "VITE_CURRENT_ENV=testing vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "env:prod": "node scripts/switch-env.js production",
+    "env:test": "node scripts/switch-env.js testing",
+    "env:status": "node scripts/switch-env.js"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.3.0",
