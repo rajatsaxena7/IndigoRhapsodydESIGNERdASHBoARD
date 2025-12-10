@@ -20,7 +20,6 @@ export const loginDesigner = async (email, password) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
-        credentials: 'include', // Include cookies for cross-origin requests
       }
     );
 
