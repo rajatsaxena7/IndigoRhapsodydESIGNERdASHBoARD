@@ -103,7 +103,6 @@ export const edituploadBulkExcel = async (fileUrl) => {
       method: 'POST',
       // Don't set Content-Type for FormData, let browser set it
       body: formData,
-      credentials: 'include', // Include cookies for cross-origin requests
     });
 
     if (!response.ok) {

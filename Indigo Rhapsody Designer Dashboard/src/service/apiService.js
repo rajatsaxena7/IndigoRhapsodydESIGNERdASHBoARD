@@ -44,7 +44,6 @@ const refreshAccessToken = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ refreshToken }),
-      credentials: 'include', // Include cookies for cross-origin requests
     });
 
     if (!response.ok) {
@@ -87,7 +86,6 @@ const createAuthenticatedRequest = async (url, options = {}) => {
             ...options.headers,
             Authorization: `Bearer ${token}`,
           },
-          credentials: 'include', // Include cookies for cross-origin requests
         });
       }).catch(err => {
         throw err;
@@ -122,7 +120,6 @@ const createAuthenticatedRequest = async (url, options = {}) => {
   return fetch(url, {
     ...options,
     headers,
-    credentials: 'include', // Include cookies for cross-origin requests
   });
 };
 
