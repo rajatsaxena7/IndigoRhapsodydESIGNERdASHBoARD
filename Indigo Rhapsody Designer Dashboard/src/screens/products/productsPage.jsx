@@ -5,6 +5,7 @@ import AddProductModal from "../../components/addProduct/addProductModal";
 import AddSubCategoryModal from "./addSubCategory";
 import UploadBulkModal from "../../components/addProductBulk/addProductBulModal";
 import EditVariantModal from "../../components/addProductBulk/editProductBulkModal";
+import AddReturnDetailsModal from "../../components/addReturnDetails/addReturnDetailsModal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { 
@@ -13,7 +14,8 @@ import {
   FunnelIcon,
   ArrowUpTrayIcon,
   PencilIcon,
-  EyeIcon
+  EyeIcon,
+  ArrowPathIcon
 } from '../../components/common/Icons';
 
 const ProductsPage = () => {
@@ -21,6 +23,7 @@ const ProductsPage = () => {
   const [showAddSubCategoryModal, setShowAddSubCategoryModal] = useState(false);
   const [showUploadBulkModal, setShowUploadBulkModal] = useState(false);
   const [showEditVariantModal, setShowEditVariantModal] = useState(false);
+  const [showAddReturnDetailsModal, setShowAddReturnDetailsModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [products, setProducts] = useState([]);
@@ -63,6 +66,14 @@ const ProductsPage = () => {
 
   const closeEditVariantModal = () => {
     setShowEditVariantModal(false);
+  };
+
+  const handleAddReturnDetailsClick = () => {
+    setShowAddReturnDetailsModal(true);
+  };
+
+  const closeAddReturnDetailsModal = () => {
+    setShowAddReturnDetailsModal(false);
   };
 
   const handleSearchChange = (e) => {
@@ -217,6 +228,12 @@ const ProductsPage = () => {
       icon: PlusIcon,
       onClick: handleAddSubCategoryClick,
       primary: false
+    },
+    {
+      label: "Add Return Details",
+      icon: ArrowPathIcon,
+      onClick: handleAddReturnDetailsClick,
+      primary: false
     }
   ];
 
@@ -336,6 +353,13 @@ const ProductsPage = () => {
         <EditVariantModal
           show={showEditVariantModal}
           onClose={closeEditVariantModal}
+        />
+      )}
+      
+      {showAddReturnDetailsModal && (
+        <AddReturnDetailsModal
+          show={showAddReturnDetailsModal}
+          onClose={closeAddReturnDetailsModal}
         />
       )}
     </RecentOrderWrap>

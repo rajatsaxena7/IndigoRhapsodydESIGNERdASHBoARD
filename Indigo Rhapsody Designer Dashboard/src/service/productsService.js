@@ -35,3 +35,24 @@ export const createPassword = async (email, password) => {
     throw error; // Rethrow the error to be caught by the UI
   }
 };
+
+export const addReturnPolicy = async (productId, returnPolicyData) => {
+  try {
+    const data = await apiPost(`/products/${productId}/return-policy`, returnPolicyData);
+    return data;
+  } catch (error) {
+    console.error("Error adding return policy:", error);
+    throw error;
+  }
+};
+
+export const updateReturnPolicy = async (productId, returnPolicyData) => {
+  try {
+    // Using POST as the endpoint supports both create and update
+    const data = await apiPost(`/products/${productId}/return-policy`, returnPolicyData);
+    return data;
+  } catch (error) {
+    console.error("Error updating return policy:", error);
+    throw error;
+  }
+};

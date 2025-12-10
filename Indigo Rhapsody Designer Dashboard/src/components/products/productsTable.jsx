@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getProductsBydesigner, updateProductStatus } from "../../service/productsService";
+import { getProductsBydesigner, updateProductStatus, updateReturnPolicy } from "../../service/productsService";
 import EditProductModal from "../../components/editProductsa/editProductsModal";
 import { 
   EyeIcon, 
@@ -23,6 +23,14 @@ const ProductsTable = ({ searchTerm = "", filter = "all", onProductsLoaded }) =>
   const [showViewModal, setShowViewModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
+  const [isEditingReturnDetails, setIsEditingReturnDetails] = useState(false);
+  const [returnDetailsForm, setReturnDetailsForm] = useState({
+    returnable: false,
+    return_Policy: "",
+    return_Window: "",
+    return_Window_Unit: "days"
+  });
+  const [savingReturnDetails, setSavingReturnDetails] = useState(false);
   const PRODUCTS_PER_PAGE = 10;
 
   useEffect(() => {
@@ -89,6 +97,14 @@ const ProductsTable = ({ searchTerm = "", filter = "all", onProductsLoaded }) =>
 
   const handleView = (product) => {
     setSelectedProduct(product);
+    // Initialize return details form with product data
+    setReturnDetailsForm({
+      returnable: product.returnable || false,
+      return_Policy: product.return_Policy || product.returnPolicy || "",
+      return_Window: product.return_Window || product.returnWindow || "",
+      return_Window_Unit: product.return_Window_Unit || product.returnWindowUnit || "days"
+    });
+    setIsEditingReturnDetails(false);
     setShowViewModal(true);
   };
 
@@ -100,6 +116,72 @@ const ProductsTable = ({ searchTerm = "", filter = "all", onProductsLoaded }) =>
   const closeViewModal = () => {
     setShowViewModal(false);
     setSelectedProduct(null);
+    setIsEditingReturnDetails(false);
+    setReturnDetailsForm({
+      returnable: false,
+      return_Policy: "",
+      return_Window: "",
+      return_Window_Unit: "days"
+    });
+  };
+
+  const handleReturnDetailsChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const fieldValue = type === "checkbox" ? checked : value;
+    
+    setReturnDetailsForm(prev => ({
+      ...prev,
+      [name]: fieldValue
+    }));
+  };
+
+  const handleSaveReturnDetails = async () => {
+    if (!selectedProduct?._id) return;
+
+    // Validation
+    if (returnDetailsForm.returnable) {
+      if (!returnDetailsForm.return_Policy.trim()) {
+        toast.error("Return policy is required when returnable is enabled");
+        return;
+      }
+      if (!returnDetailsForm.return_Window || returnDetailsForm.return_Window <= 0) {
+        toast.error("Return window must be a positive number");
+        return;
+      }
+    }
+
+    try {
+      setSavingReturnDetails(true);
+      const returnPolicyData = {
+        returnable: returnDetailsForm.returnable,
+        return_Policy: returnDetailsForm.return_Policy,
+        return_Window: parseInt(returnDetailsForm.return_Window) || 0,
+        return_Window_Unit: returnDetailsForm.return_Window_Unit,
+      };
+
+      await updateReturnPolicy(selectedProduct._id, returnPolicyData);
+      
+      // Update the product in the local state
+      const updatedProduct = {
+        ...selectedProduct,
+        ...returnPolicyData
+      };
+      setSelectedProduct(updatedProduct);
+      
+      // Update in products list
+      const updatedProducts = products.map(p =>
+        p._id === selectedProduct._id ? updatedProduct : p
+      );
+      setProducts(updatedProducts);
+      
+      toast.success("Return details updated successfully");
+      setIsEditingReturnDetails(false);
+    } catch (error) {
+      console.error("Error updating return details:", error);
+      toast.error(`Failed to update return details: ${error.message}`);
+    } finally {
+      setSavingReturnDetails(false);
+    }
   };
 
   const handleImageClick = (images) => {
@@ -372,9 +454,49 @@ const ProductsTable = ({ searchTerm = "", filter = "all", onProductsLoaded }) =>
           <div className="view-modal" onClick={(e) => e.stopPropagation()}>
             <div className="view-modal-header">
               <h3>Product Details</h3>
-              <button className="close-btn" onClick={closeViewModal}>
-                <XCircleIcon className="w-6 h-6" />
-              </button>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                {!isEditingReturnDetails ? (
+                  <button
+                    className="action-btn edit-btn"
+                    onClick={() => setIsEditingReturnDetails(true)}
+                    style={{ padding: '6px 12px', fontSize: '14px' }}
+                    title="Edit Return Details"
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                    <span style={{ marginLeft: '5px' }}>Edit Return Details</span>
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      className="action-btn save-btn"
+                      onClick={handleSaveReturnDetails}
+                      disabled={savingReturnDetails}
+                      style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: '#28a745', color: 'white' }}
+                    >
+                      {savingReturnDetails ? 'Saving...' : 'Save Return Details'}
+                    </button>
+                    <button
+                      className="action-btn cancel-btn"
+                      onClick={() => {
+                        setIsEditingReturnDetails(false);
+                        // Reset form to original values
+                        setReturnDetailsForm({
+                          returnable: selectedProduct.returnable || false,
+                          return_Policy: selectedProduct.return_Policy || selectedProduct.returnPolicy || "",
+                          return_Window: selectedProduct.return_Window || selectedProduct.returnWindow || "",
+                          return_Window_Unit: selectedProduct.return_Window_Unit || selectedProduct.returnWindowUnit || "days"
+                        });
+                      }}
+                      style={{ padding: '6px 12px', fontSize: '14px', backgroundColor: '#6c757d', color: 'white' }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+                <button className="close-btn" onClick={closeViewModal}>
+                  <XCircleIcon className="w-6 h-6" />
+                </button>
+              </div>
             </div>
                          <div className="view-modal-body">
                <div className="product-detail-grid">
@@ -422,8 +544,106 @@ const ProductsTable = ({ searchTerm = "", filter = "all", onProductsLoaded }) =>
                  </div>
                  <div className="detail-item">
                    <label>Returnable:</label>
-                   <span>{selectedProduct.returnable ? 'Yes' : 'No'}</span>
+                   {isEditingReturnDetails ? (
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                       <input
+                         type="checkbox"
+                         name="returnable"
+                         checked={returnDetailsForm.returnable}
+                         onChange={handleReturnDetailsChange}
+                       />
+                       <span>{returnDetailsForm.returnable ? 'Yes' : 'No'}</span>
+                     </div>
+                   ) : (
+                     <span>{selectedProduct.returnable ? 'Yes' : 'No'}</span>
+                   )}
                  </div>
+                 {selectedProduct.returnable && (
+                   <>
+                     <div className="detail-item full-width">
+                       <label>Return Policy:</label>
+                       {isEditingReturnDetails ? (
+                         <textarea
+                           name="return_Policy"
+                           value={returnDetailsForm.return_Policy}
+                           onChange={handleReturnDetailsChange}
+                           style={{ width: '100%', minHeight: '80px', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                           placeholder="Enter return policy details"
+                         />
+                       ) : (
+                         <span>{selectedProduct.return_Policy || selectedProduct.returnPolicy || 'N/A'}</span>
+                       )}
+                     </div>
+                     <div className="detail-item">
+                       <label>Return Window:</label>
+                       {isEditingReturnDetails ? (
+                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                           <input
+                             type="number"
+                             name="return_Window"
+                             value={returnDetailsForm.return_Window}
+                             onChange={handleReturnDetailsChange}
+                             min="1"
+                             style={{ width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                           />
+                           <select
+                             name="return_Window_Unit"
+                             value={returnDetailsForm.return_Window_Unit}
+                             onChange={handleReturnDetailsChange}
+                             style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                           >
+                             <option value="days">Days</option>
+                             <option value="weeks">Weeks</option>
+                             <option value="months">Months</option>
+                           </select>
+                         </div>
+                       ) : (
+                         <span>
+                           {selectedProduct.return_Window || selectedProduct.returnWindow || 'N/A'} 
+                           {' '}
+                           {selectedProduct.return_Window_Unit || selectedProduct.returnWindowUnit || 'days'}
+                         </span>
+                       )}
+                     </div>
+                   </>
+                 )}
+                 {!selectedProduct.returnable && isEditingReturnDetails && (
+                   <>
+                     <div className="detail-item full-width">
+                       <label>Return Policy:</label>
+                       <textarea
+                         name="return_Policy"
+                         value={returnDetailsForm.return_Policy}
+                         onChange={handleReturnDetailsChange}
+                         style={{ width: '100%', minHeight: '80px', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                         placeholder="Enter return policy details"
+                       />
+                     </div>
+                     <div className="detail-item">
+                       <label>Return Window:</label>
+                       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                         <input
+                           type="number"
+                           name="return_Window"
+                           value={returnDetailsForm.return_Window}
+                           onChange={handleReturnDetailsChange}
+                           min="1"
+                           style={{ width: '80px', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                         />
+                         <select
+                           name="return_Window_Unit"
+                           value={returnDetailsForm.return_Window_Unit}
+                           onChange={handleReturnDetailsChange}
+                           style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                         >
+                           <option value="days">Days</option>
+                           <option value="weeks">Weeks</option>
+                           <option value="months">Months</option>
+                         </select>
+                       </div>
+                     </div>
+                   </>
+                 )}
                  <div className="detail-item">
                    <label>Trending:</label>
                    <span>{selectedProduct.isTrending ? 'Yes' : 'No'}</span>
