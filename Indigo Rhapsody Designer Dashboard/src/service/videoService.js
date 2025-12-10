@@ -46,7 +46,8 @@ export const uploadVideoWithProducts = async (videoData) => {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
+        credentials: 'include', // Include cookies for cross-origin requests
       });
 
       console.log("Direct fetch response status:", directResponse.status);

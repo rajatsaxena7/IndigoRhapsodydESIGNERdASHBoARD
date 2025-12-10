@@ -102,7 +102,8 @@ export const edituploadBulkExcel = async (fileUrl) => {
     const response = await fetch(`${getApiBaseUrl()}/products/bulk-update`, {
       method: 'POST',
       // Don't set Content-Type for FormData, let browser set it
-      body: formData
+      body: formData,
+      credentials: 'include', // Include cookies for cross-origin requests
     });
 
     if (!response.ok) {

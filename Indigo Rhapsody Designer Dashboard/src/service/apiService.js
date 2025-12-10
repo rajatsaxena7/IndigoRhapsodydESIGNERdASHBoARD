@@ -44,6 +44,7 @@ const refreshAccessToken = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ refreshToken }),
+      credentials: 'include', // Include cookies for cross-origin requests
     });
 
     if (!response.ok) {
@@ -86,6 +87,7 @@ const createAuthenticatedRequest = async (url, options = {}) => {
             ...options.headers,
             Authorization: `Bearer ${token}`,
           },
+          credentials: 'include', // Include cookies for cross-origin requests
         });
       }).catch(err => {
         throw err;
@@ -120,6 +122,7 @@ const createAuthenticatedRequest = async (url, options = {}) => {
   return fetch(url, {
     ...options,
     headers,
+    credentials: 'include', // Include cookies for cross-origin requests
   });
 };
 
@@ -133,13 +136,46 @@ export const apiRequest = async (endpoint, options = {}) => {
   try {
     const response = await createAuthenticatedRequest(url, options);
 
+    // Handle 304 Not Modified - response has no body, need to retry with cache-busting
+    if (response.status === 304) {
+      console.log('⚠️ 304 Not Modified received, retrying with cache-busting...');
+      // Retry with cache-busting header and timestamp to force fresh request
+      const retryOptions = {
+        ...options,
+        headers: {
+          ...options.headers,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        }
+      };
+      // Add timestamp to URL to bypass cache
+      const cacheBuster = `?t=${Date.now()}`;
+      const retryUrl = url.includes('?') ? `${url}&t=${Date.now()}` : `${url}${cacheBuster}`;
+      const retryResponse = await createAuthenticatedRequest(retryUrl, retryOptions);
+      
+      if (!retryResponse.ok) {
+        const errorData = await retryResponse.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${retryResponse.status}`);
+      }
+      
+      // Parse JSON response
+      return await retryResponse.json();
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
+    // Parse JSON response
     return await response.json();
   } catch (error) {
+    // Handle CORS errors specifically
+    if (error.message.includes('CORS') || error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+      console.error('🚫 CORS Error:', error);
+      throw new Error('CORS Error: Unable to connect to the server. Please check your network connection and ensure the backend server allows requests from this origin.');
+    }
+    
     if (error.message === 'Token refresh failed' || error.message === 'No refresh token available') {
       // Redirect to login if refresh fails
       clearAuthCookies();
@@ -151,7 +187,13 @@ export const apiRequest = async (endpoint, options = {}) => {
 
 // GET request
 export const apiGet = (endpoint) => {
-  return apiRequest(endpoint, { method: 'GET' });
+  return apiRequest(endpoint, { 
+    method: 'GET',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+    }
+  });
 };
 
 // POST request
