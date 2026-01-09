@@ -210,7 +210,7 @@ const DashboardScreen = () => {
                   </div>
                   <div className="table-cell customer">
                     <div className="customer-info">
-                      <span className="customer-name">{order.customerName || 'N/A'}</span>
+                      <span className="customer-name">{order.userId?.displayName || order.customerName || 'N/A'}</span>
                       <span className="customer-location">{order.city}, {order.state}</span>
                     </div>
                   </div>
@@ -224,7 +224,7 @@ const DashboardScreen = () => {
                   </div>
                   <div className="table-cell date">
                     <span className="date-text">
-                      {new Date(order.createdAt || Date.now()).toLocaleDateString()}
+                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                     </span>
                   </div>
                   <div className="table-cell actions">

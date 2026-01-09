@@ -174,7 +174,40 @@ const OrderScreen = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
+    if (!dateString) return 'N/A';
+    
+    // Handle different date formats
+    let date;
+    
+    // If it's already a Date object
+    if (dateString instanceof Date) {
+      date = dateString;
+    }
+    // If it's a timestamp (number)
+    else if (typeof dateString === 'number') {
+      date = new Date(dateString);
+    }
+    // If it's a string, try parsing it
+    else if (typeof dateString === 'string') {
+      // Try direct parsing first
+      date = new Date(dateString);
+      
+      // If that fails, try parsing as timestamp string
+      if (isNaN(date.getTime()) && !isNaN(Number(dateString))) {
+        date = new Date(Number(dateString));
+      }
+    }
+    else {
+      date = new Date(dateString);
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date format:', dateString);
+      return 'N/A';
+    }
+    
+    return date.toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -350,7 +383,7 @@ const OrderScreen = () => {
                     </div>
                     <div className="table-cell customer">
                       <div className="customer-info">
-                        <span className="customer-name">{order.customerName || 'N/A'}</span>
+                        <span className="customer-name">{order.userId?.displayName || order.customerName || 'N/A'}</span>
                         <span className="customer-location">{order.city}, {order.state}</span>
                       </div>
                     </div>
@@ -377,7 +410,7 @@ const OrderScreen = () => {
                     </div>
                     <div className="table-cell date">
                       <span className="date-text">
-                        {formatDate(order.createdAt || Date.now())}
+                        {formatDate(order.createdAt)}
                       </span>
                     </div>
                     <div className="table-cell actions">
